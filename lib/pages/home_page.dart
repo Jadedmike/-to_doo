@@ -70,7 +70,7 @@ class _HomePageState extends State<HomePage> {
                   final updatedTask = await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => AddPage(oldTask: tasks[index]),
+                      builder: (_) => AddPage(task: tasks[index]),
                     ),
                   );
 
@@ -170,7 +170,7 @@ class _HomePageState extends State<HomePage> {
         onPressed: () async {
           final newTask = await Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const AddPage()),
+            MaterialPageRoute(builder: (_) => const AddPage(task: {})),
           );
           if (newTask != null) addTask(newTask);
         },

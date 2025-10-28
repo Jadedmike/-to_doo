@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AddPage extends StatefulWidget {
-  final Map<String, dynamic>? oldTask;
-  const AddPage({super.key, this.oldTask});
+  const AddPage({super.key, required Map<String, dynamic> task});
 
   @override
   State<AddPage> createState() => _AddPageState();
@@ -25,11 +24,7 @@ class _AddPageState extends State<AddPage> {
   @override
   void initState() {
     super.initState();
-    if (widget.oldTask != null) {
-      _titleController.text = widget.oldTask!['title'];
-      _descController.text = widget.oldTask!['description'];
-      selectedColor = widget.oldTask!['color'];
-    }
+    // No pre-filled task data — this page is for creating new tasks only.
   }
 
   void saveTask() {
@@ -38,7 +33,8 @@ class _AddPageState extends State<AddPage> {
       'title': _titleController.text.trim(),
       'description': _descController.text.trim(),
       'color': selectedColor ?? Colors.blueAccent,
-      'isDone': widget.oldTask?['isDone'] ?? false,
+      // New tasks default to not done
+      'isDone': false,
     });
   }
 
