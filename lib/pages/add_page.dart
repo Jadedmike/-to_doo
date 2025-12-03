@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 
 class AddPage extends StatefulWidget {
-  const AddPage({super.key, required Map<String, dynamic> task});
+  final Map<String, dynamic>? task;
+
+  const AddPage({super.key, this.task});
 
   @override
   State<AddPage> createState() => _AddPageState();
 }
 
 class _AddPageState extends State<AddPage> {
-  final TextEditingController _titleController = TextEditingController();
-  final TextEditingController _descController = TextEditingController();
+  late TextEditingController _titleController;
+  late TextEditingController _descController;
   Color? selectedColor;
 
   final List<Color> availableColors = [
@@ -24,24 +26,53 @@ class _AddPageState extends State<AddPage> {
   @override
   void initState() {
     super.initState();
-    // No pre-filled task data — this page is for creating new tasks only.
+
+    _titleController = TextEditingController(
+      text: widget.task != null ? widget.task!['title'] ?? '' : '',
+    );
+
+    _descController = TextEditingController(
+      text: widget.task != null ? widget.task!['description'] ?? '' : '',
+    );
+
+    if (widget.task != null && widget.task!['color'] != null) {
+      selectedColor = widget.task!['color'] as Color;
+    } else {
+      selectedColor = availableColors.first;
+    }
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descController.dispose();
+    super.dispose();
   }
 
   void saveTask() {
     if (_titleController.text.trim().isEmpty) return;
+
+    final bool isDoneOld = widget.task != null
+        ? (widget.task!['isDone'] ?? false)
+        : false;
+
     Navigator.pop(context, {
       'title': _titleController.text.trim(),
       'description': _descController.text.trim(),
       'color': selectedColor ?? Colors.blueAccent,
-      // New tasks default to not done
-      'isDone': false,
+      'isDone': isDoneOld,
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final bool isEditing = widget.task != null;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Add Task'), centerTitle: true),
+      appBar: AppBar(
+        title: Text(isEditing ? 'Edit Task' : 'Add Task'),
+        centerTitle: true,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -93,9 +124,9 @@ class _AddPageState extends State<AddPage> {
                 minimumSize: const Size(double.infinity, 50),
               ),
               icon: const Icon(Icons.save, color: Colors.white),
-              label: const Text(
-                'Save Task',
-                style: TextStyle(color: Colors.white, fontSize: 16),
+              label: Text(
+                isEditing ? 'Save Changes' : 'Save Task',
+                style: const TextStyle(color: Colors.white, fontSize: 16),
               ),
             ),
           ],

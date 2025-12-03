@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'add_page.dart';
+import 'package:todo_list/pages/add_page.dart';
+import 'package:todo_list/pages/widgets/list_tile.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -48,47 +49,13 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              ListTile(
-                leading: const Icon(Icons.check, color: Colors.tealAccent),
-                title: Text(
-                  tasks[index]['isDone'] ? 'Unmark as done' : 'Mark as done',
-                  style: const TextStyle(color: Colors.white),
-                ),
-                onTap: () {
-                  toggleDone(index);
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.edit, color: Colors.amberAccent),
-                title: const Text(
-                  'Edit',
-                  style: TextStyle(color: Colors.white),
-                ),
-                onTap: () async {
-                  Navigator.pop(context);
-                  final updatedTask = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => AddPage(task: tasks[index]),
-                    ),
-                  );
-
-                  if (updatedTask != null) {
-                    editTask(index, updatedTask);
-                  }
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.delete, color: Colors.redAccent),
-                title: const Text(
-                  'Delete',
-                  style: TextStyle(color: Colors.white),
-                ),
-                onTap: () {
-                  deleteTask(index);
-                  Navigator.pop(context);
-                },
+              CustomListTile(
+                tasks: tasks,
+                index: index,
+                toggleDone: (int i) => this.toggleDone(i),
+                editTask: (int i, Map<String, dynamic> updatedTask) =>
+                    this.editTask(i, updatedTask),
+                deleteTask: (int i) => this.deleteTask(i),
               ),
             ],
           ),
