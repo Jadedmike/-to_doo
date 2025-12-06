@@ -1,19 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+
+import '../models/task_model.dart';
 
 class AddPage extends StatefulWidget {
-  final Map<String, dynamic>? task;
+  final TaskModel? task;
+  final int? index;
 
-  const AddPage({super.key, this.task});
+  const AddPage({super.key, this.task, this.index});
 
   @override
   State<AddPage> createState() => _AddPageState();
 }
 
 class _AddPageState extends State<AddPage> {
-  late TextEditingController _titleController;
-  late TextEditingController _descController;
-  Color? selectedColor;
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _descController = TextEditingController();
 
+  // اللون الافتراضي للكرت
+  Color selectedColor = Colors.blueAccent;
+
+  // نفس ستايل الألوان يلي استخدمناه بالكروت
   final List<Color> availableColors = [
     Colors.redAccent,
     Colors.blueAccent,
@@ -27,18 +34,11 @@ class _AddPageState extends State<AddPage> {
   void initState() {
     super.initState();
 
-    _titleController = TextEditingController(
-      text: widget.task != null ? widget.task!['title'] ?? '' : '',
-    );
-
-    _descController = TextEditingController(
-      text: widget.task != null ? widget.task!['description'] ?? '' : '',
-    );
-
-    if (widget.task != null && widget.task!['color'] != null) {
-      selectedColor = widget.task!['color'] as Color;
-    } else {
-      selectedColor = availableColors.first;
+    // ✅ لو جايين بوضع "تعديل" (في task موجود)
+    if (widget.task != null) {
+      _titleController.text = widget.task!.title;
+      _descController.text = widget.task!.description;
+      selectedColor = Color(widget.task!.colorValue);
     }
   }
 
@@ -49,24 +49,42 @@ class _AddPageState extends State<AddPage> {
     super.dispose();
   }
 
-  void saveTask() {
-    if (_titleController.text.trim().isEmpty) return;
+  void _saveTask() {
+    final title = _titleController.text.trim();
+    final desc = _descController.text.trim();
 
-    final bool isDoneOld = widget.task != null
-        ? (widget.task!['isDone'] ?? false)
-        : false;
+    if (title.isEmpty) {
+      // لو العنوان فاضي ما منساوي شي
+      return;
+    }
 
-    Navigator.pop(context, {
-      'title': _titleController.text.trim(),
-      'description': _descController.text.trim(),
-      'color': selectedColor ?? Colors.blueAccent,
-      'isDone': isDoneOld,
-    });
+    final box = Hive.box<TaskModel>('tasksBox');
+
+    if (widget.task == null) {
+      // ✅ وضع الإضافة (تسك جديدة)
+      final newTask = TaskModel(
+        title: title,
+        description: desc,
+        isDone: false,
+        colorValue: selectedColor.value,
+      );
+      box.add(newTask);
+    } else {
+      // ✅ وضع التعديل (نفس التسك – نحدّث قيمها ونحفظ)
+      final existingTask = widget.task!;
+      existingTask.title = title;
+      existingTask.description = desc;
+      existingTask.colorValue = selectedColor.value;
+      existingTask.save(); // مهم
+    }
+
+    // منرجع على الهوم بيج
+    Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
-    final bool isEditing = widget.task != null;
+    final isEditing = widget.task != null;
 
     return Scaffold(
       appBar: AppBar(
@@ -74,10 +92,11 @@ class _AddPageState extends State<AddPage> {
         centerTitle: true,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // عنوان التسك
             TextField(
               controller: _titleController,
               decoration: const InputDecoration(
@@ -85,7 +104,9 @@ class _AddPageState extends State<AddPage> {
                 border: OutlineInputBorder(),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
+
+            // الوصف
             TextField(
               controller: _descController,
               maxLines: 3,
@@ -95,38 +116,61 @@ class _AddPageState extends State<AddPage> {
               ),
             ),
             const SizedBox(height: 16),
-            const Text('Choose Color:'),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 10,
-              children: availableColors.map((color) {
-                return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      selectedColor = color;
-                    });
-                  },
-                  child: CircleAvatar(
-                    radius: 20,
-                    backgroundColor: color,
-                    child: selectedColor == color
-                        ? const Icon(Icons.check, color: Colors.black)
-                        : null,
-                  ),
-                );
-              }).toList(),
+
+            // عنوان اختيار اللون
+            const Text(
+              'Choose color',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
-            const Spacer(),
-            ElevatedButton.icon(
-              onPressed: saveTask,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color.fromARGB(255, 159, 83, 73),
-                minimumSize: const Size(double.infinity, 50),
+            const SizedBox(height: 8),
+
+            // الألوان (دوائر صغيرة أفقية)
+            SizedBox(
+              height: 50,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: availableColors.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                itemBuilder: (context, index) {
+                  final color = availableColors[index];
+                  final isSelected = color == selectedColor;
+
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        selectedColor = color;
+                      });
+                    },
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: color,
+                        shape: BoxShape.circle,
+                        border: isSelected
+                            ? Border.all(width: 3, color: Colors.white)
+                            : null,
+                      ),
+                    ),
+                  );
+                },
               ),
-              icon: const Icon(Icons.save, color: Colors.white),
-              label: Text(
-                isEditing ? 'Save Changes' : 'Save Task',
-                style: const TextStyle(color: Colors.white, fontSize: 16),
+            ),
+
+            const Spacer(),
+
+            // زر الحفظ
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _saveTask,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: Text(
+                    isEditing ? 'Save Changes' : 'Save Task',
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ),
               ),
             ),
           ],
