@@ -35,7 +35,7 @@ class TodoListTile extends StatelessWidget {
         child: ListTile(
           title: Text(
             title,
-            textAlign: TextAlign.center, // **النص بالنص**
+            textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -49,7 +49,7 @@ class TodoListTile extends StatelessWidget {
               ? null
               : Text(
                   description,
-                  textAlign: TextAlign.center, // **كمان بالنص**
+                  textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 14,
                     color: isDone ? Colors.white38 : Colors.white70,

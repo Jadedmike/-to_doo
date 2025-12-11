@@ -32,16 +32,14 @@ class _HomePageState extends State<HomePage> {
             return const Center(child: Text('No tasks yet, add one!'));
           }
 
-          // 👇 هون رجعنا لشكل شبكة (grid) بدل ليست
           return GridView.builder(
             padding: const EdgeInsets.all(12),
             itemCount: box.length,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount:
-                  2, // عدد الكروت بالصف (غيّره لو كان عندك رقم تاني)
+              crossAxisCount: 2,
               mainAxisSpacing: 12,
               crossAxisSpacing: 12,
-              childAspectRatio: 1, // لو حسيت الكارت طويل/قصير عدّل هالقيمة بس
+              childAspectRatio: 1,
             ),
             itemBuilder: (context, index) {
               final task = box.getAt(index)!;
@@ -76,11 +74,7 @@ class _HomePageState extends State<HomePage> {
           await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => const AddPage(
-                // لو عدلنا الـ AddPage بعدين بزبطها معك
-                task: null,
-                index: -1,
-              ),
+              builder: (_) => const AddPage(task: null, index: -1),
             ),
           );
         },

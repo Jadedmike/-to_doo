@@ -17,10 +17,8 @@ class _AddPageState extends State<AddPage> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descController = TextEditingController();
 
-  // اللون الافتراضي للكرت
   Color selectedColor = Colors.blueAccent;
 
-  // نفس ستايل الألوان يلي استخدمناه بالكروت
   final List<Color> availableColors = [
     Colors.redAccent,
     Colors.blueAccent,
@@ -34,7 +32,6 @@ class _AddPageState extends State<AddPage> {
   void initState() {
     super.initState();
 
-    // ✅ لو جايين بوضع "تعديل" (في task موجود)
     if (widget.task != null) {
       _titleController.text = widget.task!.title;
       _descController.text = widget.task!.description;
@@ -54,14 +51,12 @@ class _AddPageState extends State<AddPage> {
     final desc = _descController.text.trim();
 
     if (title.isEmpty) {
-      // لو العنوان فاضي ما منساوي شي
       return;
     }
 
     final box = Hive.box<TaskModel>('tasksBox');
 
     if (widget.task == null) {
-      // ✅ وضع الإضافة (تسك جديدة)
       final newTask = TaskModel(
         title: title,
         description: desc,
@@ -70,15 +65,13 @@ class _AddPageState extends State<AddPage> {
       );
       box.add(newTask);
     } else {
-      // ✅ وضع التعديل (نفس التسك – نحدّث قيمها ونحفظ)
       final existingTask = widget.task!;
       existingTask.title = title;
       existingTask.description = desc;
       existingTask.colorValue = selectedColor.value;
-      existingTask.save(); // مهم
+      existingTask.save();
     }
 
-    // منرجع على الهوم بيج
     Navigator.pop(context);
   }
 
@@ -96,7 +89,6 @@ class _AddPageState extends State<AddPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // عنوان التسك
             TextField(
               controller: _titleController,
               decoration: const InputDecoration(
@@ -106,7 +98,6 @@ class _AddPageState extends State<AddPage> {
             ),
             const SizedBox(height: 12),
 
-            // الوصف
             TextField(
               controller: _descController,
               maxLines: 3,
@@ -117,14 +108,12 @@ class _AddPageState extends State<AddPage> {
             ),
             const SizedBox(height: 16),
 
-            // عنوان اختيار اللون
             const Text(
               'Choose color',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
 
-            // الألوان (دوائر صغيرة أفقية)
             SizedBox(
               height: 50,
               child: ListView.separated(
@@ -159,7 +148,6 @@ class _AddPageState extends State<AddPage> {
 
             const Spacer(),
 
-            // زر الحفظ
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
